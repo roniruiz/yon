@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type FormEvent,
+} from 'react';
 import {
   Palmtree,
   Waves,
@@ -24,69 +30,77 @@ const heroImage =
   'https://images.pexels.com/photos/7184629/pexels-photo-7184629.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
 const galleryImages = [
   {
-    url: 'https://images.pexels.com/photos/31734268/pexels-photo-31734268.png?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Relaxing tropical beach with palm trees in Dominican Republic',
-    label: 'Punta Cana Shore',
+    url: '/images/cards/1.jpeg',
+    alt: 'Jungle buggy group tour adventure',
+    label: 'Jungle Buggy Group Tour',
   },
   {
-    url: 'https://images.pexels.com/photos/3675435/pexels-photo-3675435.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Aerial view of tropical beach with turquoise waters',
-    label: 'Natural Pool',
+    url: '/images/cards/2.jpeg',
+    alt: 'Quad bike adventure through tropical trails',
+    label: 'Quad Bike Adventure',
   },
   {
-    url: 'https://images.pexels.com/photos/2404370/pexels-photo-2404370.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Snorkeling among vibrant marine life',
-    label: 'Coral Reef',
+    url: '/images/cards/3.jpeg',
+    alt: 'Jungle buggy expedition through the rainforest',
+    label: 'Jungle Buggy Expedition',
   },
   {
-    url: 'https://images.pexels.com/photos/4599685/pexels-photo-4599685.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Catamaran anchored along a tropical beach',
-    label: 'Catamaran Cruise',
+    url: '/images/cards/4.jpeg',
+    alt: 'Private buggy ride on sunny roads',
+    label: 'Private Buggy Ride',
   },
   {
-    url: 'https://images.pexels.com/photos/31794420/pexels-photo-31794420.png?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Woman lounging on a leaning palm tree',
-    label: 'Beach Bliss',
-  },
-  {
-    url: 'https://images.pexels.com/photos/10816914/pexels-photo-10816914.png?auto=compress&cs=tinysrgb&h=650&w=940',
-    alt: 'Boats docked on a sunny beach in Dominican Republic',
-    label: 'Bay Harbor',
+    url: '/images/cards/e.jpeg',
+    alt: 'Snorkeling with tropical fish in clear water',
+    label: 'Snorkeling with Tropical Fish',
   },
 ];
 
 const experiences = [
   {
-    icon: Sailboat,
-    title: 'Catamaran Cruise',
+    icon: Users,
+    image: '/images/cards/1.jpeg',
+    title: 'Jungle Buggy Group Tour',
     description:
-      'Sail across the Caribbean Sea on a spacious catamaran with unlimited drinks, music, and panoramic ocean views.',
-    duration: 'Full day',
-    price: '$89',
-  },
-  {
-    icon: Fish,
-    title: 'Snorkeling Adventure',
-    description:
-      'Dive into crystal-clear waters and swim alongside tropical fish in one of the most vibrant coral reefs in the Caribbean.',
-    duration: '2 hours',
-    price: '$45',
-  },
-  {
-    icon: Palmtree,
-    title: 'Beach Relaxation',
-    description:
-      'Unwind on powdery white sands beneath swaying palm trees with a fresh coconut in hand and the sound of gentle waves.',
-    duration: 'Unlimited',
-    price: 'Included',
+      'Share an unforgettable off-road adventure with your group, splashing through tropical trails and discovering the island beyond the beach.',
+    duration: 'Half day',
+    price: '$75',
   },
   {
     icon: Waves,
-    title: 'Natural Pool',
+    image: '/images/cards/2.jpeg',
+    title: 'Quad Bike Adventure',
     description:
-      'Wade into a shallow sandbar in the middle of the ocean — a giant natural swimming pool with starfish and warm turquoise water.',
-    duration: '1.5 hours',
-    price: '$35',
+      'Take control of a powerful quad and ride through wild Dominican paths, muddy crossings, and lush green scenery.',
+    duration: '3 hours',
+    price: '$65',
+  },
+  {
+    icon: Sailboat,
+    image: '/images/cards/3.jpeg',
+    title: 'Jungle Buggy Expedition',
+    description:
+      'Ride through rainforest trails in a buggy convoy and experience the thrill of the island with friends and family.',
+    duration: 'Half day',
+    price: '$79',
+  },
+  {
+    icon: Palmtree,
+    image: '/images/cards/4.jpeg',
+    title: 'Private Buggy Ride',
+    description:
+      'Enjoy a flexible buggy outing for two with sunny roads, tropical views, and plenty of stops for photos along the way.',
+    duration: '2.5 hours',
+    price: '$85',
+  },
+  {
+    icon: Fish,
+    image: '/images/cards/e.jpeg',
+    title: 'Snorkeling with Tropical Fish',
+    description:
+      'Swim in clear Caribbean water surrounded by colorful fish for a calm, memorable underwater experience.',
+    duration: '2 hours',
+    price: '$45',
   },
 ];
 
@@ -145,17 +159,22 @@ function useReveal() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
+    let observer: IntersectionObserver | null = null;
+    const fallback = window.setTimeout(() => setVisible(true), 2000);
+    observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
-          observer.disconnect();
+          observer?.disconnect();
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer?.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return { ref, visible };
@@ -166,7 +185,7 @@ function Reveal({
   delay = 0,
   className = '',
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   delay?: number;
   className?: string;
 }) {
@@ -364,27 +383,36 @@ function Experiences() {
           </div>
         </Reveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {experiences.map((exp, i) => (
             <Reveal key={exp.title} delay={i * 120}>
-              <div className="glass-card rounded-2xl p-6 card-hover h-full flex flex-col">
-                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mb-5">
-                  <exp.icon className="w-7 h-7 text-brand-600" />
+              <div className="glass-card rounded-2xl overflow-hidden card-hover h-full flex flex-col">
+                <div className="h-44 overflow-hidden">
+                  <img
+                    src={exp.image}
+                    alt={exp.title}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-brand-800 mb-2">
-                  {exp.title}
-                </h3>
-                <p className="text-sm text-brand-700 leading-relaxed mb-5 flex-grow">
-                  {exp.description}
-                </p>
-                <div className="flex items-center justify-between pt-4 border-t border-brand-100">
-                  <span className="flex items-center gap-1.5 text-xs text-brand-600">
-                    <Clock className="w-4 h-4" />
-                    {exp.duration}
-                  </span>
-                  <span className="text-coral-600 font-semibold">
-                    {exp.price}
-                  </span>
+                <div className="p-6 flex flex-col flex-grow">
+                  <div className="w-12 h-12 -mt-12 mb-4 rounded-2xl bg-white shadow-md flex items-center justify-center relative">
+                    <exp.icon className="w-6 h-6 text-brand-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-brand-800 mb-2">
+                    {exp.title}
+                  </h3>
+                  <p className="text-sm text-brand-700 leading-relaxed mb-5 flex-grow">
+                    {exp.description}
+                  </p>
+                  <div className="flex items-center justify-between pt-4 border-t border-brand-100">
+                    <span className="flex items-center gap-1.5 text-xs text-brand-600">
+                      <Clock className="w-4 h-4" />
+                      {exp.duration}
+                    </span>
+                    <span className="text-coral-600 font-semibold">
+                      {exp.price}
+                    </span>
+                  </div>
                 </div>
               </div>
             </Reveal>
@@ -549,10 +577,10 @@ function Booking() {
     email: '',
     date: '',
     guests: '2',
-    experience: 'Catamaran Cruise',
+    experience: 'Jungle Buggy Group Tour',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
